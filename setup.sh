@@ -102,6 +102,29 @@ fabric-supply-chain
     └── fabric-samples
 
 
+#####################################################
+# publish to github: create the repo with same name without readme and then on terminal:
 
+git init
+git remote add origin https://github.com/HenokBerhanu/fabric-supply-chain.git
+git add .
+git commit -m "Initial commit - project structure setup"
+git branch -M main
+git push -u origin main
+#####################################################################
+
+# Generate Crypto Materials with cryptogen: the crypto-coonfig folder was empty
+
+/home/henok/fabric-supply-chain/fabric-tools/fabric-samples/bin/cryptogen generate \
+  --config=./crypto-config.yaml \
+  --output=./crypto-config
+
+# the output should be: 
+        manufacturer.example.com
+        supplier.example.com
+        logistics.example.com
+        regulator.example.com
+###########################################################################
+# Generate genesis block and channel transactions
 
 
