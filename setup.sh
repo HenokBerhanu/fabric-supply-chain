@@ -127,4 +127,29 @@ git push -u origin main
 ###########################################################################
 # Generate genesis block and channel transactions
 
+/home/henok/fabric-supply-chain/fabric-tools/fabric-samples/bin/configtxgen \
+  -profile SupplyChainGenesis \
+  -channelID system-channel \
+  -outputBlock ./config/genesis.block
+
+# Generate Channel Creation Transaction: to generate channel.tx
+
+/home/henok/fabric-supply-chain/fabric-tools/fabric-samples/bin/configtxgen \
+  -profile SupplyChainChannel \
+  -outputCreateChannelTx ./config/channel.tx \
+  -channelID supplychannel
+
+# Generate Anchor Peer Update Transaction : n Hyperledger Fabric v3.x, the -outputAnchorPeersUpdate flag has been removed, and anchor peers are now included directly within the channel creation transaction. 🎯 So, you no longer need to generate separate anchor peer updates like in Fabric v2.x. That step is deprecated and unnecessary in your case.
+# Skip this
+/home/henok/fabric-supply-chain/fabric-tools/fabric-samples/bin/configtxgen \
+  -profile SupplyChainChannel \
+  -outputAnchorPeersUpdate ./config/ManufacturerMSPanchors.tx \
+  -channelID supplychannel \
+  -asOrg ManufacturerMSP
+
+# Start Docker containers
+docker-compose -f ./docker/docker-compose.yaml up -d
+
+# Create and Join the Channel
+
 
