@@ -1,0 +1,195 @@
+Organizations:
+  - &Orderer
+    Name: OrdererMSP
+    ID: OrdererMSP
+    MSPDir: crypto-config/ordererOrganizations/example.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('OrdererMSP.member')"
+      Writers:
+        Type: Signature
+        Rule: "OR('OrdererMSP.member')"
+      Admins:
+        Type: Signature
+        Rule: "OR('OrdererMSP.admin')"
+
+  - &Manufacturer
+    Name: ManufacturerMSP
+    ID: ManufacturerMSP
+    MSPDir: crypto-config/peerOrganizations/manufacturer.example.com/msp
+    AnchorPeers:
+      - Host: peer0.manufacturer.example.com
+        Port: 7051
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('ManufacturerMSP.member')"
+      Writers:
+        Type: Signature
+        Rule: "OR('ManufacturerMSP.member')"
+      Admins:
+        Type: Signature
+        Rule: "OR('ManufacturerMSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('ManufacturerMSP.peer')"
+
+  - &Supplier
+    Name: SupplierMSP
+    ID: SupplierMSP
+    MSPDir: crypto-config/peerOrganizations/supplier.example.com/msp
+    AnchorPeers:
+      - Host: peer0.supplier.example.com
+        Port: 8051
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('SupplierMSP.member')"
+      Writers:
+        Type: Signature
+        Rule: "OR('SupplierMSP.member')"
+      Admins:
+        Type: Signature
+        Rule: "OR('SupplierMSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('SupplierMSP.peer')"
+
+  - &Logistics
+    Name: LogisticsMSP
+    ID: LogisticsMSP
+    MSPDir: crypto-config/peerOrganizations/logistics.example.com/msp
+    AnchorPeers:
+      - Host: peer0.logistics.example.com
+        Port: 9051
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('LogisticsMSP.member')"
+      Writers:
+        Type: Signature
+        Rule: "OR('LogisticsMSP.member')"
+      Admins:
+        Type: Signature
+        Rule: "OR('LogisticsMSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('LogisticsMSP.peer')"
+
+  - &Regulator
+    Name: RegulatorMSP
+    ID: RegulatorMSP
+    MSPDir: crypto-config/peerOrganizations/regulator.example.com/msp
+    AnchorPeers:
+      - Host: peer0.regulator.example.com
+        Port: 10051
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('RegulatorMSP.member')"
+      Writers:
+        Type: Signature
+        Rule: "OR('RegulatorMSP.member')"
+      Admins:
+        Type: Signature
+        Rule: "OR('RegulatorMSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('RegulatorMSP.peer')"
+
+Capabilities:
+  Channel: &ChannelCapabilities
+    V2_0: true
+  Orderer: &OrdererCapabilities
+    V2_0: true
+  Application: &ApplicationCapabilities
+    V2_0: true
+
+Application: &ApplicationDefaults
+  Organizations:
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+    Endorsement:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Endorsement"
+  Capabilities:
+    <<: *ApplicationCapabilities
+
+Orderer: &OrdererDefaults
+  OrdererType: etcdraft
+  EtcdRaft:
+    Consenters:
+      - Host: orderer.example.com
+        Port: 7050
+        ClientTLSCert: crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/tls/server.crt
+        ServerTLSCert: crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/tls/server.crt
+  Addresses:
+    - orderer.example.com:7050
+  BatchTimeout: 2s
+  BatchSize:
+    MaxMessageCount: 10
+    AbsoluteMaxBytes: 99 MB
+    PreferredMaxBytes: 512 KB
+  Organizations:
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+    BlockValidation:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+  Capabilities:
+    <<: *OrdererCapabilities
+
+Channel: &ChannelDefaults
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+  Capabilities:
+    <<: *ChannelCapabilities
+
+Profiles:
+  SupplyChainGenesis:
+    Orderer:
+      <<: *OrdererDefaults
+      Organizations:
+        - *Orderer
+    Consortiums:
+      SupplyChainConsortium:
+        Organizations:
+          - *Manufacturer
+          - *Supplier
+          - *Logistics
+          - *Regulator
+
+  SupplyChainChannel:
+    Consortium: SupplyChainConsortium
+    Application:
+      <<: *ApplicationDefaults
+      Organizations:
+        - *Manufacturer
+        - *Supplier
+        - *Logistics
+        - *Regulator
